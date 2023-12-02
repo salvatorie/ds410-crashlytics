@@ -151,6 +151,8 @@ cleanedDf = cleanedDf.fillna({"Wind_Chill(F)": 0, "Precipitation(in)": 0, "Wind_
 
 cleanedDf.persist()
 
+print("||DATA PREPROCESSED||")
+
 # %% [markdown]
 # Our dataframe cleanedDf is now ready for use in KMeans, PCA, and classification.
 
@@ -167,6 +169,7 @@ cleanedDf.persist()
 
 # %%
 #Ignore reamining null values
+
 kmeansAssembler = VectorAssembler(inputCols=cleanedDf.columns, outputCol="features", handleInvalid="skip")
 kmeansData = kmeansAssembler.transform(cleanedDf)
 
@@ -175,6 +178,8 @@ lostRecordCount = cleanedDf.count() - kmeansData.count()
 # %%
 print("Lost records due to null values: ", lostRecordCount) 
 print("Percentage of total records lost: ", lostRecordCount/cleanedDf.count())
+
+print("||BEGNNING KMEANS")
 
 # %% [markdown]
 # ---
@@ -201,6 +206,7 @@ kValues = range(2, 20)
 wcss_scores = []
 
 for k in kValues:
+  print(f"||DOING KMEANS BEFORE PCA WITH {k} CLUSTERS||")
   clustered_data, wcss = fit_kmeans(kmeansData,num_cluster_centers=k)
   wcss_scores.append(wcss)
 
@@ -209,7 +215,7 @@ plt.plot(kValues, wcss_scores, marker='o')
 plt.title("Elbow Method for Optimal K")
 plt.xlabel("Number of Clusters (K)")
 plt.ylabel("WCSS Scores")
-plt.savefig("prePCAElbowMethod.png")
+plt.savefig("prePCAElbowMethodICDS.png")
 
 # %% [markdown]
 # After performing K-Means clustering with 2-20 clusters, there is no obvious candidate for optimal number of clusters. This could indicate that our data does not have well-separated, distinct clusters. Reducing the dimensionality of our data may lead to better results, so after completing PCA and identifying the principle components of our dataset we will revisit K-Means.
@@ -227,12 +233,12 @@ scaler = StandardScaler(inputCol="features", outputCol="scaledFeatures", withStd
 scalerModel = scaler.fit(kmeansData)
 scaledData = scalerModel.transform(kmeansData)
 
-pca = PCA(k=18, inputCol="scaledFeatures", outputCol="pcaFeatures")
-pcaModel = pca.fit(scaledData)
-result = pcaModel.transform(scaledData)
+# pca = PCA(k=18, inputCol="scaledFeatures", outputCol="pcaFeatures")
+# pcaModel = pca.fit(scaledData)
+# result = pcaModel.transform(scaledData)
 
 # %%
-print("Explained Variance: ", sum(pcaModel.explainedVariance))
+#print("Explained Variance: ", sum(pcaModel.explainedVariance))
 
 # %% [markdown]
 # We will find the minimum number of principle components needed to explain at least 95% of the variance. We want to reduce the dimensionality of our data as much as possible but still retain a high amount of the variance.
@@ -278,7 +284,7 @@ plt.plot(kValues, wcss_scores_pca, marker='o')
 plt.title("Elbow Method for Optimal K using Principle Components")
 plt.xlabel("Number of Clusters (K)")
 plt.ylabel("WCSS Scores")
-plt.savefig("postPCAElbowMethod.png")
+plt.savefig("postPCAElbowMethodICDS.png")
 
 # %% [markdown]
 # Unfortunately the results of K-Means clustering are still inconclusive after performing PCA and extracting the principle components of our dataset. Moreover, we were not able to greatly reduce the dimensionality of our data by performing PCA, in order to explain 95% of the variance in our data we needed to retain 21 principle components from 26 features.
@@ -300,8 +306,6 @@ classifierData = classifierAssembler.transform(cleanedDf)
 classifierData = classifierData.withColumn(colName="label", col=F.col("Severity")).drop("Severity")
 
 trainingData, testData = classifierData.randomSplit([0.75, 0.25], seed=42)
-trainingData.persist()
-testData.persist()
 
 accuracyEvaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="accuracy")
 f1Evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction", metricName="f1")
@@ -330,8 +334,8 @@ def trainAndEvaluateDT(trainingData: pyspark.sql.DataFrame, testData: pyspark.sq
     highestTestF1 = 0
     bestDtModel = None
 
-    maxDepthList = range(2, 10)
-    minInstancesPerNodeList = range(1,15)
+    maxDepthList = range(6, 10)
+    minInstancesPerNodeList = range(1,7)
 
     for maxDepth in maxDepthList:
         for minInstances in minInstancesPerNodeList:
@@ -354,7 +358,7 @@ def trainAndEvaluateDT(trainingData: pyspark.sql.DataFrame, testData: pyspark.sq
             index += 1
 
     dtHyperparamsEvaluationDf.loc[bestIndex, "best model"] = 1
-    dtHyperparamsEvaluationDf.to_csv("dtHyperparameters.csv", index=True, sep="|")
+    dtHyperparamsEvaluationDf.to_csv("dtHyperparametersICDS.csv", index=True, sep="|")
 
     trainingData.unpersist()
     testData.unpersist()
@@ -380,7 +384,7 @@ def visualizeDT(dtModel: pyspark.ml.classification.DecisionTreeClassificationMod
     plot_trees(parsedTree, column = column, output_path = outputPath)
 
 # %%
-visualizeDT(dtModel=bestDtModel, modelPath="bestDecisionTreeModel", outputPath="bestDecisionTreeVisualization.html")
+visualizeDT(dtModel=bestDtModel, modelPath="bestDecisionTreeModelICDS", outputPath="bestDecisionTreeVisualizationICDS.html")
 
 # %% [markdown]
 # The visualization of the decision tree is dense and hard to decipher. Later we will see how many features we need to keep to achieve similar amounts of predictive ability, and the visualization should be easier to understand if that succeeds.
@@ -405,7 +409,7 @@ def trainAndEvaluateRandomForest(trainingData: pyspark.sql.DataFrame, testData: 
     highestTestF1 = 0
 
     maxDepthList = range(2, 10)
-    minInstancesPerNodeList = range(1,15)
+    minInstancesPerNodeList = range(1,7)
 
     for maxDepth in maxDepthList:
         for minInstances in minInstancesPerNodeList:
@@ -427,7 +431,7 @@ def trainAndEvaluateRandomForest(trainingData: pyspark.sql.DataFrame, testData: 
             index += 1
 
     randomForestEvaluationDf.loc[bestIndex, "best model"] = 1
-    randomForestEvaluationDf.to_csv("randomForestHyperparameters.csv", index=True, sep="|")
+    randomForestEvaluationDf.to_csv("randomForestHyperparametersICDS.csv", index=True, sep="|")
 
     trainingData.unpersist()
     testData.unpersist()
@@ -489,7 +493,7 @@ def trainAndEvaluateMLP(trainingData: pyspark.sql.DataFrame, testData: pyspark.s
         index += 1
 
     mlpHyperparamsEvaluationDf.loc[bestIndex, "best model"] = 1
-    mlpHyperparamsEvaluationDf.to_csv("mlpHyperparameters.csv", index=True, sep="|")
+    mlpHyperparamsEvaluationDf.to_csv("mlpHyperparametersICDS.csv", index=True, sep="|")
 
     trainingData.unpersist()
     testData.unpersist()
@@ -503,10 +507,6 @@ mlpAccuracy = dtDf.loc[mlpIndex, "testing accuracy"]
 
 # %%
 print(mlpDf.loc[mlpIndex])
-
-# %%
-trainingData.unpersist()
-testData.unpersist()
 
 # %% [markdown]
 # As expected, the MLP classifier performed much worse than either tree-based classifier. With two hidden layers with 20 nodes, the model only achieved an F1 score of 0.6. It is possible that with better tuning of the hidden layer sizes this approach would work better.
@@ -553,7 +553,7 @@ classifiers = ['Decision Tree', 'Random Forest', 'Multilayer Perceptron']
 accuracyScores = [dtAccuracy, randomForestAccuracy, mlpAccuracy] 
 f1Scores = [dtF1, randomForestF1, mlpF1]
 
-plotClassifierPerformance(classifierLabels=classifiers, accuracyScores=accuracyScores, f1Scores=f1Scores, title="Classifier Performance", xTitle="Classifier", outputPath="classifiersBarChart.png")
+plotClassifierPerformance(classifierLabels=classifiers, accuracyScores=accuracyScores, f1Scores=f1Scores, title="Classifier Performance", xTitle="Classifier", outputPath="classifiersBarChartICDS.png")
 
 # %% [markdown]
 # ---
@@ -613,7 +613,7 @@ setsOfFourNames = ["No Source", "No Road", "No Location", "No Env", "No Accident
 setsOfFourAccuracyScores = [noSourceDf.loc[noSourceIndex, "testing accuracy"], noRoadDf.loc[noRoadIndex, "testing accuracy"], noLocationDf.loc[noLocationIndex, "testing accuracy"], noEnvironmentDf.loc[noEnvironmentIndex, "testing accuracy"], noAccidentDf.loc[noAccidentIndex, "testing accuracy"]]
 setsOfFourF1Scores = [noSourceDf.loc[noSourceIndex, "testing f1"], noRoadDf.loc[noRoadIndex, "testing f1"], noLocationDf.loc[noLocationIndex, "testing f1"], noEnvironmentDf.loc[noEnvironmentIndex, "testing f1"], noAccidentDf.loc[noAccidentIndex, "testing f1"]]
 
-plotClassifierPerformance(classifierLabels=setsOfFourNames, accuracyScores=setsOfFourAccuracyScores, f1Scores=setsOfFourF1Scores, title="Decision Tree Performance w/ Omitted Features", xTitle="Features", outputPath="oneMissingFeatureSetPlot.png")
+plotClassifierPerformance(classifierLabels=setsOfFourNames, accuracyScores=setsOfFourAccuracyScores, f1Scores=setsOfFourF1Scores, title="Decision Tree Performance w/ Omitted Features", xTitle="Features", outputPath="oneMissingFeatureSetPlotICDS.png")
 
 # %% [markdown]
 # The location features seem to have the largest impact on accuracy, so we will now test using just two feature sets, where one of the sets will be location features. We'll also test using just the location features.
@@ -636,7 +636,7 @@ locationNames = ["Loc+Source", "Loc+Road", "Loc+Env", "Loc+Accident", "Only Loc"
 locationAccuracyScores = [locSourceDf.loc[locSourceIndex, "testing accuracy"], locRoadDf.loc[locRoadIndex, "testing accuracy"], locEnvironmentDf.loc[locEnvironmentIndex, "testing accuracy"], locAccidentDf.loc[locAccidentIndex, "testing accuracy"], locDf.loc[locIndex, "testing accuracy"]]
 locationF1Scores = [locSourceDf.loc[locSourceIndex, "testing f1"], locRoadDf.loc[locRoadIndex, "testing f1"], locEnvironmentDf.loc[locEnvironmentIndex, "testing f1"], locAccidentDf.loc[locAccidentIndex, "testing f1"], locDf.loc[locIndex, "testing f1"]]
 
-plotClassifierPerformance(classifierLabels=locationNames, accuracyScores=locationAccuracyScores, f1Scores=locationF1Scores, title="Decision Tree Performance w/ Omitted Features", xTitle="Features", outputPath="twoFeatureSetsPlot.png")
+plotClassifierPerformance(classifierLabels=locationNames, accuracyScores=locationAccuracyScores, f1Scores=locationF1Scores, title="Decision Tree Performance w/ Omitted Features", xTitle="Features", outputPath="twoFeatureSetsPlotICDS.png")
 
 # %% [markdown]
 # These results are surprising. The best performance on testing data was from the combination of road and location features, but by just keeping the location features (Start Latitude, and Start Longitude), the model was able to predict the crash severity with 90% accuracy. Perhaps this implies that MapQuest and Bing have a bias towards classifying accidents as either severity 2 or 3 based on region. Latitude and longitude should, after all, not have any real impact on crash severity.
@@ -647,7 +647,7 @@ plotClassifierPerformance(classifierLabels=locationNames, accuracyScores=locatio
 # The visualization produced by the decision tree classifier generated after hyperparameter tuning was too dense to parse, so hopefully by reducing the feature set to the bare minimum (only latitude and longitude information), we can better understand how the decision tree is doing classification.
 
 # %%
-visualizeDT(dtModel=locModel, modelPath="locDecisionTreeModel", outputPath="locDecisionTreeVisualization.html")
+visualizeDT(dtModel=locModel, modelPath="locDecisionTreeModel", outputPath="locDecisionTreeVisualizationICDS.html")
 
 # %% [markdown]
 # The decision tree is still difficult to parse, but it does seem clear that there is a reporting bias for accident severity 2 or 3 based on the location of the accident, which is interesting.
