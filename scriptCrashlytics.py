@@ -247,6 +247,7 @@ scaledData = scalerModel.transform(kmeansData)
 principleComponents = range(1, 26)
 bestPcCount = 1
 for pc in principleComponents:
+    print(f"||DOING PCA WITH {pc} PRINCIPLE COMPONENTS||")
     pca=PCA(k=pc, inputCol="scaledFeatures", outputCol="pcaFeatures")
     pcaModel = pca.fit(scaledData)
     if sum(pcaModel.explainedVariance) > 0.95:
@@ -339,6 +340,7 @@ def trainAndEvaluateDT(trainingData: pyspark.sql.DataFrame, testData: pyspark.sq
 
     for maxDepth in maxDepthList:
         for minInstances in minInstancesPerNodeList:
+            print(f"||TRAINING DT WITH MAX DEPTH {maxDepth} AND MIN INSTANCES {minInstances}||")
             seed = 42
             dtClassifier = DecisionTreeClassifier(featuresCol="features", labelCol="label", maxDepth=maxDepth, minInstancesPerNode=minInstances, seed=seed)
             dtModel = dtClassifier.fit(trainingData)
@@ -413,6 +415,7 @@ def trainAndEvaluateRandomForest(trainingData: pyspark.sql.DataFrame, testData: 
 
     for maxDepth in maxDepthList:
         for minInstances in minInstancesPerNodeList:
+            print(f"||TRAINING RANDOM FOREST WITH MAX DEPTH {maxDepth} AND MIN INSTANCES {minInstances}||")
             seed=42
             randomForestClassifier = RandomForestClassifier(featuresCol="features", labelCol="label", maxDepth=maxDepth, minInstancesPerNode=minInstances, seed=seed)
             randomForestModel = randomForestClassifier.fit(trainingData)
@@ -475,6 +478,7 @@ def trainAndEvaluateMLP(trainingData: pyspark.sql.DataFrame, testData: pyspark.s
     hiddenLayerSizes = [[10], [20], [30], [10, 10], [10, 20], [10, 30], [20, 10], [20, 20], [20, 30], [30, 10], [30, 20], [30, 30]]
 
     for layerSize in hiddenLayerSizes:
+        print(f"||TRAINING MLP WITH HIDDEN LAYER SIZES {', '.join(map(str, layerSize))}||")
         seed=42
         mlpClassifier = MultilayerPerceptronClassifier(featuresCol="features", labelCol="label", layers=[25] + layerSize + [4], seed=seed)
         mlpModel = mlpClassifier.fit(trainingData)
@@ -602,10 +606,15 @@ assemblerNoLocation = VectorAssembler(inputCols=sourceFeatures+roadEngineeringFe
 assemblerNoEnvironment = VectorAssembler(inputCols=sourceFeatures+roadEngineeringFeatures+locationFeatures+accidentFeatures, outputCol="features", handleInvalid="skip")
 assemblerNoAccident = VectorAssembler(inputCols=sourceFeatures+roadEngineeringFeatures+locationFeatures+environmentalFeatures, outputCol="features", handleInvalid="skip")
 
+print("||BEGIN TRAINING NO SOURCE INFO||")
 noSourceDf, noSourceIndex, noSourceModel = vectorizeAndTestDT(vectorAssembler=assemblerNoSource)
+print("||BEGIN TRAINING NO ROAD INFO||")
 noRoadDf, noRoadIndex, noRoadModel = vectorizeAndTestDT(vectorAssembler=assemblerNoRoad)
+print("||BEGIN TRAINING NO LOCATION INFO||")
 noLocationDf, noLocationIndex, noLocationModel = vectorizeAndTestDT(vectorAssembler=assemblerNoLocation)
+print("||BEGIN TRAINING NO ENVIRONMENT INFO||")
 noEnvironmentDf, noEnvironmentIndex, noEnvironmentModel = vectorizeAndTestDT(vectorAssembler=assemblerNoEnvironment)
+print("||BEGIN TRAINING NO ACCIDENT INFO||")
 noAccidentDf, noAccidentIndex, noAccidentModel = vectorizeAndTestDT(vectorAssembler=assemblerNoAccident)
 
 # %%
@@ -625,10 +634,15 @@ assemblerLocEnvironment = VectorAssembler(inputCols=environmentalFeatures+locati
 assemblerLocAccident = VectorAssembler(inputCols=accidentFeatures+locationFeatures, outputCol="features", handleInvalid="skip")
 assemblerLoc = VectorAssembler(inputCols=locationFeatures, outputCol="features", handleInvalid="skip")
 
+print("||BEGIN TRAINING LOC+SOURCE||")
 locSourceDf, locSourceIndex, locSourceModel = vectorizeAndTestDT(vectorAssembler=assemblerLocSource)
+print("||BEGIN TRAINING LOC+ROAD||")
 locRoadDf, locRoadIndex, locRoadModel = vectorizeAndTestDT(vectorAssembler=assemblerLocRoad)
+print("||BEGIN TRAINING LOC+ENV||")
 locEnvironmentDf, locEnvironmentIndex, locEnvironmentModel = vectorizeAndTestDT(vectorAssembler=assemblerLocEnvironment)
+print("||BEGIN TRAINING LOC+ACCIDENT||")
 locAccidentDf, locAccidentIndex, locAccidentModel = vectorizeAndTestDT(vectorAssembler=assemblerLocAccident)
+print("||BEGIN TRAINING LOC||")
 locDf, locIndex, locModel = vectorizeAndTestDT(vectorAssembler=assemblerLoc) 
 
 # %%
