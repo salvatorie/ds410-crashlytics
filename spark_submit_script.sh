@@ -3,7 +3,7 @@
 #SBATCH --nodes=4                     # Number of nodes to request
 #SBATCH --ntasks-per-node=4           # Number of processes per node
 #SBATCH --mem=16G                     # Memory per node
-#SBATCH --time=3:00:00                # Maximum runtime in HH:MM:SS
+#SBATCH --time=24:00:00                # Maximum runtime in HH:MM:SS
 #SBATCH --account=open 	              # Queue
 #SBATCH --mail-user=ejs6233@psu.edu
 #SBATCH --mail-type=ALL
@@ -15,6 +15,15 @@ module use /gpfs/group/RISE/sw7/modules
 module load spark/3.3.0
 export PYSPARK_PYTHON=python3
 export PYSPARK_DRIVER_PYTHON=python3
+
+numNodes=4
+numTasks=4
+mem=16
+driverMem=14
+echo "Number of nodes: $numNodes"
+echo "Number of tasks per node: $numTasks"
+echo "Mem per nodes: $mem GB"
+echo "PySpark driver memory: $driverMem GB"
 
 # Run PySpark
 # Record the start time
