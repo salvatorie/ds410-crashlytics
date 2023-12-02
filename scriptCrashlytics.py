@@ -59,7 +59,7 @@ from decision_tree_plot.decision_tree_plot import plot_trees
 ss=SparkSession.builder.appName("crashlytics").getOrCreate()
 
 # %%
-rawDf = ss.read.csv("reduced_crash_data.csv", header=True, inferSchema=True)
+rawDf = ss.read.csv("crash_data.csv", header=True, inferSchema=True)
 #rawDf.printSchema()
 
 # %% [markdown]
