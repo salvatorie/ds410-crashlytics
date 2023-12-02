@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>Eureka Trees</title>
+
+    <style>
+        .node circle {
+            fill: #fff;
+            stroke: steelblue;
+            stroke-width: 3px;
+        }
+
+        .node text {
+            font: 12px sans-serif;
+        }
+
+        .link {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 2px;
+        }
+
+        rect {
+            stroke-width: 3px;
+            stroke: #8c8c8c;
+        }
+
+        .decision-mark {
+            font-weight: bold;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+
+<!-- load the d3.js library -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<script>
+    var data = [{"name": "Start_Lng <= -121.45974749999999", "children": [{"name": "Start_Lng <= -122.4929085", "type": "left", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 468.0, 6.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 468.0, 6.0, 0.0])", "value": "1.0: ([0.0, 468.0, 6.0, 0.0])"}, {"name": "Start_Lat <= 37.321947", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lat <= 37.251276000000004", "type": "left", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 394.0, 2.0, 1.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 394.0, 2.0, 1.0])", "value": "1.0: ([0.0, 394.0, 2.0, 1.0])"}, {"name": "Start_Lng <= -121.87108649999999", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lng <= -121.9966465", "type": "left", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 21.0, 2.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 21.0, 2.0, 0.0])", "value": "1.0: ([0.0, 21.0, 2.0, 0.0])"}, {"name": "Start_Lng <= -121.966961", "type": "right", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 5.0, 26.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 5.0, 26.0, 0.0])", "value": "2.0: ([0.0, 5.0, 26.0, 0.0])"}, {"name": "Start_Lng <= -121.935238", "type": "right", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 51.0, 18.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 51.0, 18.0, 0.0])", "value": "1.0: ([0.0, 51.0, 18.0, 0.0])"}, {"name": "Start_Lng <= -121.90346550000001", "type": "right", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 7.0, 15.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 7.0, 15.0, 0.0])", "value": "2.0: ([0.0, 7.0, 15.0, 0.0])"}, {"name": "1.0: ([0.0, 23.0, 9.0, 1.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 23.0, 9.0, 1.0])", "value": "1.0: ([0.0, 23.0, 9.0, 1.0])"}], "op": "<=", "value": "-121.90346550000001", "na": "Start_Lng "}], "op": "<=", "value": "-121.935238", "na": "Start_Lng "}], "op": "<=", "value": "-121.966961", "na": "Start_Lng "}], "op": "<=", "value": "-121.9966465", "na": "Start_Lng "}, {"name": "1.0: ([0.0, 57.0, 0.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 57.0, 0.0, 0.0])", "value": "1.0: ([0.0, 57.0, 0.0, 0.0])"}], "op": "<=", "value": "-121.87108649999999", "na": "Start_Lng "}], "op": "<=", "value": "37.251276000000004", "na": "Start_Lat "}, {"name": "Start_Lat <= 37.58124", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lng <= -122.04136650000001", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lng <= -122.32971599999999", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lat <= 37.504627", "type": "left", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 13.0, 2.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 13.0, 2.0, 0.0])", "value": "1.0: ([0.0, 13.0, 2.0, 0.0])"}, {"name": "2.0: ([0.0, 8.0, 20.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 8.0, 20.0, 0.0])", "value": "2.0: ([0.0, 8.0, 20.0, 0.0])"}], "op": "<=", "value": "37.504627", "na": "Start_Lat "}, {"name": "Start_Lat <= 37.420719500000004", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lng <= -122.109131", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lng <= -122.2626875", "type": "left", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 3.0, 0.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 3.0, 0.0, 0.0])", "value": "1.0: ([0.0, 3.0, 0.0, 0.0])"}, {"name": "2.0: ([0.0, 3.0, 24.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 3.0, 24.0, 0.0])", "value": "2.0: ([0.0, 3.0, 24.0, 0.0])"}], "op": "<=", "value": "-122.2626875", "na": "Start_Lng "}, {"name": "1.0: ([0.0, 42.0, 6.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 42.0, 6.0, 0.0])", "value": "1.0: ([0.0, 42.0, 6.0, 0.0])"}], "op": "<=", "value": "-122.109131", "na": "Start_Lng "}, {"name": "Start_Lng <= -122.06986599999999", "type": "right", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 199.0, 19.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 199.0, 19.0, 0.0])", "value": "1.0: ([0.0, 199.0, 19.0, 0.0])"}, {"name": "2.0: ([0.0, 6.0, 7.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 6.0, 7.0, 0.0])", "value": "2.0: ([0.0, 6.0, 7.0, 0.0])"}], "op": "<=", "value": "-122.06986599999999", "na": "Start_Lng "}], "op": "<=", "value": "37.420719500000004", "na": "Start_Lat "}], "op": "<=", "value": "-122.32971599999999", "na": "Start_Lng "}, {"name": "Start_Lat <= 37.420719500000004", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lng <= -121.935238", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lat <= 37.364002", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lng <= -121.9966465", "type": "left", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 2.0, 14.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 2.0, 14.0, 0.0])", "value": "2.0: ([0.0, 2.0, 14.0, 0.0])"}, {"name": "1.0: ([0.0, 20.0, 13.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 20.0, 13.0, 0.0])", "value": "1.0: ([0.0, 20.0, 13.0, 0.0])"}], "op": "<=", "value": "-121.9966465", "na": "Start_Lng "}, {"name": "1.0: ([0.0, 83.0, 5.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 83.0, 5.0, 0.0])", "value": "1.0: ([0.0, 83.0, 5.0, 0.0])"}], "op": "<=", "value": "37.364002", "na": "Start_Lat "}, {"name": "Start_Lng <= -121.801941", "type": "right", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 100.0, 119.0, 1.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 100.0, 119.0, 1.0])", "value": "2.0: ([0.0, 100.0, 119.0, 1.0])"}, {"name": "1.0: ([0.0, 4.0, 0.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 4.0, 0.0, 0.0])", "value": "1.0: ([0.0, 4.0, 0.0, 0.0])"}], "op": "<=", "value": "-121.801941", "na": "Start_Lng "}], "op": "<=", "value": "-121.935238", "na": "Start_Lng "}, {"name": "2.0: ([0.0, 10.0, 151.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 10.0, 151.0, 0.0])", "value": "2.0: ([0.0, 10.0, 151.0, 0.0])"}], "op": "<=", "value": "37.420719500000004", "na": "Start_Lat "}], "op": "<=", "value": "-122.04136650000001", "na": "Start_Lng "}, {"name": "Start_Lat <= 37.95730399999999", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lng <= -122.32971599999999", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lat <= 37.7716085", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lng <= -122.4051015", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lat <= 37.74061800000001", "type": "left", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 30.0, 87.0, 1.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 30.0, 87.0, 1.0])", "value": "2.0: ([0.0, 30.0, 87.0, 1.0])"}, {"name": "1.0: ([1.0, 27.0, 4.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([1.0, 27.0, 4.0, 0.0])", "value": "1.0: ([1.0, 27.0, 4.0, 0.0])"}], "op": "<=", "value": "37.74061800000001", "na": "Start_Lat "}, {"name": "1.0: ([0.0, 80.0, 12.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 80.0, 12.0, 0.0])", "value": "1.0: ([0.0, 80.0, 12.0, 0.0])"}], "op": "<=", "value": "-122.4051015", "na": "Start_Lng "}, {"name": "Start_Lng <= -122.4051015", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lat <= 37.900843", "type": "left", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 23.0, 8.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 23.0, 8.0, 0.0])", "value": "1.0: ([0.0, 23.0, 8.0, 0.0])"}, {"name": "2.0: ([0.0, 0.0, 5.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 0.0, 5.0, 0.0])", "value": "2.0: ([0.0, 0.0, 5.0, 0.0])"}], "op": "<=", "value": "37.900843", "na": "Start_Lat "}, {"name": "2.0: ([0.0, 9.0, 77.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 9.0, 77.0, 0.0])", "value": "2.0: ([0.0, 9.0, 77.0, 0.0])"}], "op": "<=", "value": "-122.4051015", "na": "Start_Lng "}], "op": "<=", "value": "37.7716085", "na": "Start_Lat "}, {"name": "Start_Lng <= -122.2626875", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lat <= 37.639734000000004", "type": "left", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 4.0, 1.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 4.0, 1.0, 0.0])", "value": "1.0: ([0.0, 4.0, 1.0, 0.0])"}, {"name": "2.0: ([0.0, 16.0, 254.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 16.0, 254.0, 0.0])", "value": "2.0: ([0.0, 16.0, 254.0, 0.0])"}], "op": "<=", "value": "37.639734000000004", "na": "Start_Lat "}, {"name": "Start_Lat <= 37.842597999999995", "type": "right", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 216.0, 714.0, 1.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 216.0, 714.0, 1.0])", "value": "2.0: ([0.0, 216.0, 714.0, 1.0])"}, {"name": "Start_Lng <= -122.109131", "type": "right", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 42.0, 1.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 42.0, 1.0, 0.0])", "value": "1.0: ([0.0, 42.0, 1.0, 0.0])"}, {"name": "2.0: ([0.0, 50.0, 75.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 50.0, 75.0, 0.0])", "value": "2.0: ([0.0, 50.0, 75.0, 0.0])"}], "op": "<=", "value": "-122.109131", "na": "Start_Lng "}], "op": "<=", "value": "37.842597999999995", "na": "Start_Lat "}], "op": "<=", "value": "-122.2626875", "na": "Start_Lng "}], "op": "<=", "value": "-122.32971599999999", "na": "Start_Lng "}, {"name": "Start_Lng <= -122.32971599999999", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lat <= 38.007805000000005", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lng <= -122.4051015", "type": "left", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 1.0, 0.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 1.0, 0.0, 0.0])", "value": "1.0: ([0.0, 1.0, 0.0, 0.0])"}, {"name": "2.0: ([0.0, 3.0, 5.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 3.0, 5.0, 0.0])", "value": "2.0: ([0.0, 3.0, 5.0, 0.0])"}], "op": "<=", "value": "-122.4051015", "na": "Start_Lng "}, {"name": "1.0: ([0.0, 55.0, 1.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 55.0, 1.0, 0.0])", "value": "1.0: ([0.0, 55.0, 1.0, 0.0])"}], "op": "<=", "value": "38.007805000000005", "na": "Start_Lat "}, {"name": "Start_Lat <= 38.079735", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lng <= -122.109131", "type": "left", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 41.0, 109.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 41.0, 109.0, 0.0])", "value": "2.0: ([0.0, 41.0, 109.0, 0.0])"}, {"name": "1.0: ([0.0, 146.0, 21.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 146.0, 21.0, 0.0])", "value": "1.0: ([0.0, 146.0, 21.0, 0.0])"}], "op": "<=", "value": "-122.109131", "na": "Start_Lng "}, {"name": "Start_Lng <= -121.5022585", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lng <= -122.2626875", "type": "left", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 32.0, 0.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 32.0, 0.0, 0.0])", "value": "1.0: ([0.0, 32.0, 0.0, 0.0])"}, {"name": "2.0: ([0.0, 168.0, 458.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 168.0, 458.0, 0.0])", "value": "2.0: ([0.0, 168.0, 458.0, 0.0])"}], "op": "<=", "value": "-122.2626875", "na": "Start_Lng "}, {"name": "Start_Lat <= 38.49267950000001", "type": "right", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 6.0, 25.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 6.0, 25.0, 0.0])", "value": "2.0: ([0.0, 6.0, 25.0, 0.0])"}, {"name": "1.0: ([0.0, 130.0, 55.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 130.0, 55.0, 0.0])", "value": "1.0: ([0.0, 130.0, 55.0, 0.0])"}], "op": "<=", "value": "38.49267950000001", "na": "Start_Lat "}], "op": "<=", "value": "-121.5022585", "na": "Start_Lng "}], "op": "<=", "value": "38.079735", "na": "Start_Lat "}], "op": "<=", "value": "-122.32971599999999", "na": "Start_Lng "}], "op": "<=", "value": "37.95730399999999", "na": "Start_Lat "}], "op": "<=", "value": "37.58124", "na": "Start_Lat "}], "op": "<=", "value": "37.321947", "na": "Start_Lat "}], "op": "<=", "value": "-122.4929085", "na": "Start_Lng "}, {"name": "Start_Lat <= 39.902624", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lng <= -121.26335900000001", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lat <= 38.007805000000005", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lat <= 37.74061800000001", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lat <= 37.420719500000004", "type": "left", "is_prediction": false, "children": [{"name": "1.0: ([1.0, 28.0, 1.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([1.0, 28.0, 1.0, 0.0])", "value": "1.0: ([1.0, 28.0, 1.0, 0.0])"}, {"name": "Start_Lat <= 37.639734000000004", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lat <= 37.58124", "type": "left", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 0.0, 4.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 0.0, 4.0, 0.0])", "value": "2.0: ([0.0, 0.0, 4.0, 0.0])"}, {"name": "Start_Lng <= -121.30849850000001", "type": "right", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 1.0, 6.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 1.0, 6.0, 0.0])", "value": "2.0: ([0.0, 1.0, 6.0, 0.0])"}, {"name": "1.0: ([0.0, 2.0, 0.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 2.0, 0.0, 0.0])", "value": "1.0: ([0.0, 2.0, 0.0, 0.0])"}], "op": "<=", "value": "-121.30849850000001", "na": "Start_Lng "}], "op": "<=", "value": "37.58124", "na": "Start_Lat "}, {"name": "1.0: ([0.0, 11.0, 0.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 11.0, 0.0, 0.0])", "value": "1.0: ([0.0, 11.0, 0.0, 0.0])"}], "op": "<=", "value": "37.639734000000004", "na": "Start_Lat "}], "op": "<=", "value": "37.420719500000004", "na": "Start_Lat "}, {"name": "Start_Lat <= 37.900843", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lng <= -121.34697349999999", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lat <= 37.7716085", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lng <= -121.382984", "type": "left", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 4.0, 23.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 4.0, 23.0, 0.0])", "value": "2.0: ([0.0, 4.0, 23.0, 0.0])"}, {"name": "1.0: ([1.0, 5.0, 3.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([1.0, 5.0, 3.0, 0.0])", "value": "1.0: ([1.0, 5.0, 3.0, 0.0])"}], "op": "<=", "value": "-121.382984", "na": "Start_Lng "}, {"name": "1.0: ([0.0, 5.0, 0.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 5.0, 0.0, 0.0])", "value": "1.0: ([0.0, 5.0, 0.0, 0.0])"}], "op": "<=", "value": "37.7716085", "na": "Start_Lat "}, {"name": "2.0: ([0.0, 13.0, 62.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 13.0, 62.0, 0.0])", "value": "2.0: ([0.0, 13.0, 62.0, 0.0])"}], "op": "<=", "value": "-121.34697349999999", "na": "Start_Lng "}, {"name": "Start_Lng <= -121.382984", "type": "right", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 1.0, 0.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 1.0, 0.0, 0.0])", "value": "1.0: ([0.0, 1.0, 0.0, 0.0])"}, {"name": "Start_Lng <= -121.34697349999999", "type": "right", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 0.0, 6.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 0.0, 6.0, 0.0])", "value": "2.0: ([0.0, 0.0, 6.0, 0.0])"}, {"name": "Start_Lat <= 37.95730399999999", "type": "right", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 16.0, 35.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 16.0, 35.0, 0.0])", "value": "2.0: ([0.0, 16.0, 35.0, 0.0])"}, {"name": "1.0: ([0.0, 10.0, 10.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 10.0, 10.0, 0.0])", "value": "1.0: ([0.0, 10.0, 10.0, 0.0])"}], "op": "<=", "value": "37.95730399999999", "na": "Start_Lat "}], "op": "<=", "value": "-121.34697349999999", "na": "Start_Lng "}], "op": "<=", "value": "-121.382984", "na": "Start_Lng "}], "op": "<=", "value": "37.900843", "na": "Start_Lat "}], "op": "<=", "value": "37.74061800000001", "na": "Start_Lat "}, {"name": "Start_Lat <= 38.61095", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lat <= 38.292797", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lng <= -121.34697349999999", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lng <= -121.4183385", "type": "left", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 5.0, 10.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 5.0, 10.0, 0.0])", "value": "2.0: ([0.0, 5.0, 10.0, 0.0])"}, {"name": "Start_Lat <= 38.079735", "type": "right", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 3.0, 7.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 3.0, 7.0, 0.0])", "value": "2.0: ([0.0, 3.0, 7.0, 0.0])"}, {"name": "1.0: ([0.0, 10.0, 5.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 10.0, 5.0, 0.0])", "value": "1.0: ([0.0, 10.0, 5.0, 0.0])"}], "op": "<=", "value": "38.079735", "na": "Start_Lat "}], "op": "<=", "value": "-121.4183385", "na": "Start_Lng "}, {"name": "1.0: ([0.0, 31.0, 0.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 31.0, 0.0, 0.0])", "value": "1.0: ([0.0, 31.0, 0.0, 0.0])"}], "op": "<=", "value": "-121.34697349999999", "na": "Start_Lng "}, {"name": "Start_Lat <= 38.57338750000001", "type": "right", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 274.0, 2.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 274.0, 2.0, 0.0])", "value": "1.0: ([0.0, 274.0, 2.0, 0.0])"}, {"name": "Start_Lng <= -121.4183385", "type": "right", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 16.0, 21.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 16.0, 21.0, 0.0])", "value": "2.0: ([0.0, 16.0, 21.0, 0.0])"}, {"name": "1.0: ([0.0, 114.0, 3.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 114.0, 3.0, 0.0])", "value": "1.0: ([0.0, 114.0, 3.0, 0.0])"}], "op": "<=", "value": "-121.4183385", "na": "Start_Lng "}], "op": "<=", "value": "38.57338750000001", "na": "Start_Lat "}], "op": "<=", "value": "38.292797", "na": "Start_Lat "}, {"name": "Start_Lng <= -121.4183385", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lat <= 38.644375", "type": "left", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 2.0, 32.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 2.0, 32.0, 0.0])", "value": "2.0: ([0.0, 2.0, 32.0, 0.0])"}, {"name": "1.0: ([0.0, 11.0, 0.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 11.0, 0.0, 0.0])", "value": "1.0: ([0.0, 11.0, 0.0, 0.0])"}], "op": "<=", "value": "38.644375", "na": "Start_Lat "}, {"name": "Start_Lat <= 38.678619499999996", "type": "right", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 179.0, 46.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 179.0, 46.0, 0.0])", "value": "1.0: ([0.0, 179.0, 46.0, 0.0])"}, {"name": "Start_Lng <= -121.34697349999999", "type": "right", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 49.0, 0.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 49.0, 0.0, 0.0])", "value": "1.0: ([0.0, 49.0, 0.0, 0.0])"}, {"name": "Start_Lat <= 38.743971", "type": "right", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 29.0, 44.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 29.0, 44.0, 0.0])", "value": "2.0: ([0.0, 29.0, 44.0, 0.0])"}, {"name": "1.0: ([0.0, 29.0, 14.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 29.0, 14.0, 0.0])", "value": "1.0: ([0.0, 29.0, 14.0, 0.0])"}], "op": "<=", "value": "38.743971", "na": "Start_Lat "}], "op": "<=", "value": "-121.34697349999999", "na": "Start_Lng "}], "op": "<=", "value": "38.678619499999996", "na": "Start_Lat "}], "op": "<=", "value": "-121.4183385", "na": "Start_Lng "}], "op": "<=", "value": "38.61095", "na": "Start_Lat "}], "op": "<=", "value": "38.007805000000005", "na": "Start_Lat "}, {"name": "Start_Lat <= 38.743971", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lat <= 36.990751", "type": "left", "is_prediction": false, "children": [{"name": "Start_Lng <= -120.82605749999999", "type": "left", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 1.0, 1.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 1.0, 1.0, 0.0])", "value": "1.0: ([0.0, 1.0, 1.0, 0.0])"}, {"name": "2.0: ([0.0, 3.0, 7.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 3.0, 7.0, 0.0])", "value": "2.0: ([0.0, 3.0, 7.0, 0.0])"}], "op": "<=", "value": "-120.82605749999999", "na": "Start_Lng "}, {"name": "Start_Lat <= 37.504627", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lat <= 37.420719500000004", "type": "left", "is_prediction": false, "children": [{"name": "1.0: ([0.0, 63.0, 6.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 63.0, 6.0, 0.0])", "value": "1.0: ([0.0, 63.0, 6.0, 0.0])"}, {"name": "Start_Lng <= -121.0530775", "type": "right", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 1.0, 8.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 1.0, 8.0, 0.0])", "value": "2.0: ([0.0, 1.0, 8.0, 0.0])"}, {"name": "1.0: ([0.0, 10.0, 0.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 10.0, 0.0, 0.0])", "value": "1.0: ([0.0, 10.0, 0.0, 0.0])"}], "op": "<=", "value": "-121.0530775", "na": "Start_Lng "}], "op": "<=", "value": "37.420719500000004", "na": "Start_Lat "}, {"name": "Start_Lng <= -84.21352350000001", "type": "right", "is_prediction": false, "children": [{"name": "1.0: ([1.0, 509.0, 5.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "1.0: ([1.0, 509.0, 5.0, 0.0])", "value": "1.0: ([1.0, 509.0, 5.0, 0.0])"}, {"name": "Start_Lat <= 38.49267950000001", "type": "right", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 0.0, 1.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 0.0, 1.0, 0.0])", "value": "2.0: ([0.0, 0.0, 1.0, 0.0])"}, {"name": "1.0: ([0.0, 1.0, 0.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 1.0, 0.0, 0.0])", "value": "1.0: ([0.0, 1.0, 0.0, 0.0])"}], "op": "<=", "value": "38.49267950000001", "na": "Start_Lat "}], "op": "<=", "value": "-84.21352350000001", "na": "Start_Lng "}], "op": "<=", "value": "37.504627", "na": "Start_Lat "}], "op": "<=", "value": "36.990751", "na": "Start_Lat "}, {"name": "Start_Lng <= -121.192116", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lat <= 39.046339", "type": "left", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 20.0, 35.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 20.0, 35.0, 0.0])", "value": "2.0: ([0.0, 20.0, 35.0, 0.0])"}, {"name": "1.0: ([0.0, 5.0, 0.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 5.0, 0.0, 0.0])", "value": "1.0: ([0.0, 5.0, 0.0, 0.0])"}], "op": "<=", "value": "39.046339", "na": "Start_Lat "}, {"name": "1.0: ([0.0, 422.0, 85.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 422.0, 85.0, 0.0])", "value": "1.0: ([0.0, 422.0, 85.0, 0.0])"}], "op": "<=", "value": "-121.192116", "na": "Start_Lng "}], "op": "<=", "value": "38.743971", "na": "Start_Lat "}], "op": "<=", "value": "-121.26335900000001", "na": "Start_Lng "}, {"name": "Start_Lng <= -83.1395", "type": "right", "is_prediction": false, "children": [{"name": "Start_Lng <= -84.21352350000001", "type": "left", "is_prediction": false, "children": [{"name": "2.0: ([0.0, 0.0, 1.0, 0.0])", "type": "left", "is_prediction": true, "children": [], "na": "2.0: ([0.0, 0.0, 1.0, 0.0])", "value": "2.0: ([0.0, 0.0, 1.0, 0.0])"}, {"name": "1.0: ([0.0, 12.0, 7.0, 0.0])", "type": "right", "is_prediction": true, "children": [], "na": "1.0: ([0.0, 12.0, 7.0, 0.0])", "value": "1.0: ([0.0, 12.0, 7.0, 0.0])"}], "op": "<=", "value": "-84.21352350000001", "na": "Start_Lng "}, {"name": "2.0: ([2.0, 92.0, 122.0, 1.0])", "type": "right", "is_prediction": true, "children": [], "na": "2.0: ([2.0, 92.0, 122.0, 1.0])", "value": "2.0: ([2.0, 92.0, 122.0, 1.0])"}], "op": "<=", "value": "-83.1395", "na": "Start_Lng "}], "op": "<=", "value": "39.902624", "na": "Start_Lat "}], "type": "root", "op": "<=", "value": "-121.45974749999999", "na": "Start_Lng "}];
+
+    var dataMap = data.reduce(function (map, node) {
+        map[node.name] = node;
+        return map;
+    }, {});
+
+    var treeData = [];
+    data.forEach(function (node) {
+        // add to parent
+        var parent = dataMap[node.parent];
+        if (parent) {
+            // create child array if it doesn't exist
+            (parent.children || (parent.children = []))
+            // add node to child array
+                .push(node);
+        } else {
+            // parent is null or missing
+            treeData.push(node);
+        }
+    });
+    // ************** Generate the tree diagram	 *****************
+    var margin = {top: 100, right: 40, bottom: 20, left: 40},
+        width = 6750 -margin.right - margin.left,
+        height = 1080;
+
+    var i = 0;
+    var tree = d3.layout.tree()
+        .size([height, width]);
+    var diagonal = d3.svg.diagonal()
+        .projection(function (d) {
+            return [d.x * 4, d.y];
+        });
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.right + margin.left)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    root = treeData[0];
+
+    update(root);
+
+    function update(source) {
+        // Compute the new tree layout.
+        var nodes = tree.nodes(source).reverse(),
+            links = tree.links(nodes);
+        // Normalize for fixed-depth.
+        nodes.forEach(function (d) {
+            d.y = d.depth * 100;
+        });
+        // Declare the nodes
+        var node = svg.selectAll("g.node")
+            .data(nodes, function (d) {
+                return d.id || (d.id = ++i);
+            });
+        // Enter the nodes.
+        var nodeEnter = node.enter().append("g")
+            .attr("class", function (d) {
+                var result = "node";
+                if (d.is_prediction) {
+                    result = result + " prediction";
+                } else {
+                    result = result + " decision";
+                }
+                result = result + " " + d.type;
+                return result;
+            })
+            .attr("transform", function (d) {
+                return "translate(" + d.x * 4 + "," + d.y + ")";
+            });
+
+        nodeEnter.append("text")
+            .attr("y", function (d) {
+                return d.children || d._children ? -30 : 25;
+            })
+            .attr("dy", ".35em")
+            .attr("text-anchor", "middle")
+            .text(function (d) {
+                if (typeof d.name === 'number') {
+                    return d.name;
+                }
+                else {
+                    return d.value;
+                }
+
+            })
+            .style("fill-opacity", 1);
+
+        var predictions = nodeEnter.filter(function (d) {
+            return (d.is_prediction === true);
+        });
+
+        predictions.append("circle")
+            .attr("cx", "0px")
+            .attr("cy", "0px")
+            .attr("r", "12px");
+
+
+        var decisions = nodeEnter.filter(function (d) {
+            return (d.is_prediction !== true);
+        });
+
+        decisions.append("rect")
+            .attr("x", -15)
+            .attr("y", -15)
+            .attr("transform", "rotate(45)")
+            .attr("width", "25")
+            .attr("height", "25")
+            .style("fill", "#fff");
+
+        decisions
+            .append("text")
+            .text("Yes")
+            .attr("text-anchor", "middle")
+            .attr("x", -30)
+            .attr("y", 30);
+
+        decisions
+            .append("text")
+            .text("No")
+            .attr("text-anchor", "middle")
+            .attr("x", 30)
+            .attr("y", 30);
+
+        decisions
+            .append("text")
+            .text("?")
+            .attr("class", "decision-mark")
+            .attr("text-anchor", "middle")
+            .attr("x", 0)
+            .attr("y", 0);
+
+        decisions.append("text")
+            .attr("y", function (d) {
+                return d.children || d._children ? -60 : 60;
+            })
+            .attr("dy", ".35em")
+            .attr("text-anchor", "middle")
+            .text(function (d) {
+                return d.na;
+            })
+            .style("fill-opacity", 1);
+
+        decisions.append("text")
+            .attr("y", function (d) {
+                return d.children || d._children ? -44 : 44;
+            })
+            .attr("dy", ".35em")
+            .attr("text-anchor", "middle")
+            .text(function (d) {
+                 return d.op;
+            })
+            .style("fill-opacity", 1);
+
+
+        // Declare the links
+        var link = svg.selectAll("path.link")
+            .data(links, function (d) {
+                return d.target.id;
+            });
+        // Enter the links.
+        link.enter().insert("path", "g")
+            .attr("class", "link")
+            .attr("d", diagonal);
+    }
+</script>
+
+</body>
+</html>
