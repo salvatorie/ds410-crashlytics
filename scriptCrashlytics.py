@@ -315,24 +315,15 @@ f1Evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol=
 # %% [markdown]
 # Create a Decision tree classifier using arbitrary hyperparameters
 
-# %%
-dtClassifier = DecisionTreeClassifier(featuresCol="features", labelCol="label", maxDepth=6, minInstancesPerNode=2)
-dtModel = dtClassifier.fit(trainingData)
-testPredictions = dtModel.transform(testData)
-
-# %%
-accuracy = accuracyEvaluator.evaluate(testPredictions)
-print(f"Accuracy: {accuracy}")
-
-f1 = f1Evaluator.evaluate(testPredictions)
-print(f"F1: {f1}")
-
 # %% [markdown]
 # We perform hyperparameter tuning on the classifier to identify the best set of hyperparameters.
 
 # %%
 def trainAndEvaluateDT(trainingData: pyspark.sql.DataFrame, testData: pyspark.sql.DataFrame) -> (pd.DataFrame, int, pyspark.ml.classification.DecisionTreeClassificationModel):
     dtHyperparamsEvaluationDf = pd.DataFrame(columns = ["max depth", "min instances per node", "testing f1", "testing accuracy", "best model"])
+
+    trainingData.persist()
+    testData.persist()
 
     index = 0
     bestIndex = 0
@@ -364,6 +355,10 @@ def trainAndEvaluateDT(trainingData: pyspark.sql.DataFrame, testData: pyspark.sq
 
     dtHyperparamsEvaluationDf.loc[bestIndex, "best model"] = 1
     dtHyperparamsEvaluationDf.to_csv("dtHyperparameters.csv", index=True, sep="|")
+
+    trainingData.unpersist()
+    testData.unpersist()
+
     return (dtHyperparamsEvaluationDf, bestIndex, bestDtModel)
 
 # %%
@@ -399,20 +394,11 @@ visualizeDT(dtModel=bestDtModel, modelPath="bestDecisionTreeModel", outputPath="
 # We will now see how a random forest classifier performs on the data.
 
 # %%
-randomForestClassifier = RandomForestClassifier(featuresCol="features", labelCol="label", maxDepth=5, minInstancesPerNode=2)
-randomForestModel = randomForestClassifier.fit(trainingData)
-testPredictions = randomForestModel.transform(testData)
-
-# %%
-accuracy = accuracyEvaluator.evaluate(testPredictions)
-print(f"Accuracy: {accuracy}")
-
-f1 = f1Evaluator.evaluate(testPredictions)
-print(f"F1: {f1}")
-
-# %%
 def trainAndEvaluateRandomForest(trainingData: pyspark.sql.DataFrame, testData: pyspark.sql.DataFrame) -> (pd.DataFrame, int):
     randomForestEvaluationDf = pd.DataFrame(columns = ["max depth", "min instances per node", "testing f1", "testing accuracy", "best model"])
+
+    trainingData.persist()
+    testData.persist()
 
     index = 0
     bestIndex = 0
@@ -442,6 +428,10 @@ def trainAndEvaluateRandomForest(trainingData: pyspark.sql.DataFrame, testData: 
 
     randomForestEvaluationDf.loc[bestIndex, "best model"] = 1
     randomForestEvaluationDf.to_csv("randomForestHyperparameters.csv", index=True, sep="|")
+
+    trainingData.unpersist()
+    testData.unpersist()
+
     return (randomForestEvaluationDf, bestIndex)
 
 
@@ -468,20 +458,11 @@ print(randomForestDf.loc[randomForestIndex])
 # First we create an MLP Classifier with arbitrary hidden layer sizes. The input layer must have 25 nodes to ingest all 25 features of our dataset and the output layer must have 4 nodes for each of the 4 severity classes. The hyperparameter we will be tuning here is the hidden layer sizes i.e. the layers of nodes between the input and output layers.
 
 # %%
-mlpClassifier = MultilayerPerceptronClassifier(featuresCol="features", labelCol="label", layers=[25,12,4,16,4,4])
-mlpModel = mlpClassifier.fit(trainingData)
-testPredictions = mlpModel.transform(testData)
-
-# %%
-accuracy = accuracyEvaluator.evaluate(testPredictions)
-print(f"Accuracy: {accuracy}")
-
-f1 = f1Evaluator.evaluate(testPredictions)
-print(f"F1: {f1}")
-
-# %%
 def trainAndEvaluateMLP(trainingData: pyspark.sql.DataFrame, testData: pyspark.sql.DataFrame) -> (pd.DataFrame, int):
     mlpHyperparamsEvaluationDf = pd.DataFrame(columns = ["hidden layer sizes", "testing f1", "testing accuracy", "best model"])
+
+    trainingData.persist()
+    testData.persist()
 
     index = 0
     bestIndex = 0
@@ -509,6 +490,10 @@ def trainAndEvaluateMLP(trainingData: pyspark.sql.DataFrame, testData: pyspark.s
 
     mlpHyperparamsEvaluationDf.loc[bestIndex, "best model"] = 1
     mlpHyperparamsEvaluationDf.to_csv("mlpHyperparameters.csv", index=True, sep="|")
+
+    trainingData.unpersist()
+    testData.unpersist()
+
     return (mlpHyperparamsEvaluationDf, bestIndex)
 
 # %%
@@ -518,6 +503,10 @@ mlpAccuracy = dtDf.loc[mlpIndex, "testing accuracy"]
 
 # %%
 print(mlpDf.loc[mlpIndex])
+
+# %%
+trainingData.unpersist()
+testData.unpersist()
 
 # %% [markdown]
 # As expected, the MLP classifier performed much worse than either tree-based classifier. With two hidden layers with 20 nodes, the model only achieved an F1 score of 0.6. It is possible that with better tuning of the hidden layer sizes this approach would work better.
@@ -603,8 +592,6 @@ def vectorizeAndTestDT(vectorAssembler: VectorAssembler) -> (pd.DataFrame, int, 
     classifierDataDT = classifierDataDT.withColumn(colName="label", col=F.col("Severity")).drop("Severity")
 
     trainingDataDT, testDataDT = classifierDataDT.randomSplit([0.75, 0.25], seed=42)
-    trainingDataDT.persist()
-    testDataDT.persist()
 
     return trainAndEvaluateDT(trainingData=trainingDataDT, testData=testDataDT)
 
