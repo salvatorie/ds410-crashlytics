@@ -103,7 +103,7 @@ cleanedDf = cleanedDf.withColumn("Severity", F.col("Severity")-1)
 # Convert categorical string columns into integer indices so that they can be ingested by the models.
 
 # %%
-labelIndexer = StringIndexer(inputCols = ["Sunrise_Sunset", "Source"], outputCols = ["DaytimeId", "SourceId"]).fit(rawDf)
+labelIndexer = StringIndexer(inputCols = ["Sunrise_Sunset", "Source"], outputCols = ["DaytimeId", "SourceId"], handleInvalid="skip").fit(rawDf)
 cleanedDf = labelIndexer.transform(cleanedDf)
 
 # %% [markdown]
