@@ -1,33 +1,3 @@
-# %% [markdown]
-# # Crashlytics
-
-# %% [markdown]
-# In this notebook we investigate [US Car Accident Data](https://www.kaggle.com/datasets/sobhanmoosavi/us-accidents). 
-# 
-# Our goal is to create a classifier that can predict the severity of a car accident given the other features in the dataset. We will use three methods of classification (Decision Trees, Random Forest, and a Neural Network) and compare the results.
-# 
-
-# %% [markdown]
-# ## Update to project goal
-
-# %% [markdown]
-# 
-# Severity is defined rather cryptically in this dataset. According to the [original paper](https://arxiv.org/pdf/1906.05409.pdf) detailing the creation of the dataset, crash severity is a native feature of the data, which was collected from both Bing and MapQuest. Bing and MapQuest use different scales for severity, [1,4] for Bing and [0,4] for MapQuest, the similarity between the two ranking systems being that a larger number indicates a more severe accident. The only insight into the meaning of accident severity is that it is typically correlated with duration, distance, and delay where:
-# - **Duration**: how long was traffic impacted by the accident
-# - **Distance**: how far did the impact on traffic extend
-# - **Delay**: how much delay in traffic flow was caused
-# 
-# However, these three features are very poorly recorded in the dataset. In the majority of records, crash duration is recorded as either 30 or 45 minutes and crash distance is recorded as 0 miles or approximately 0 miles. Delay is nowhere to be found. So it would be very difficult to determine whether severity is actually determined by some combination of duration, distance, and delay.
-# 
-# Though the original intent of this project was to create a car accident severity predictor that could predict the severity of an accident given the circumstances the accident occured under, the classifiers are actually predicting how either Bing or MapQuest would classify the severity of an accident given the less-than-ideal data those services either generate or receive.
-
-# %% [markdown]
-# ---
-# ---
-
-# %% [markdown]
-# ## Import/install dependencies, create SparkSession, and read in data
-
 # %%
 import pyspark
 import pandas as pd
@@ -60,6 +30,8 @@ ss=SparkSession.builder.appName("crashlytics").getOrCreate()
 
 # %%
 rawDf = ss.read.csv("crash_data.csv", header=True, inferSchema=True)
+rawDf.repartition(100)
+
 #rawDf.printSchema()
 
 # %% [markdown]
@@ -68,7 +40,7 @@ rawDf = ss.read.csv("crash_data.csv", header=True, inferSchema=True)
 
 # %% [markdown]
 # ## Imbalance in Data
-# 
+#
 # One important characteristic of our dataset is that a crash severity of 2 or 3 is much more common than any other severity ranking, which we will have to consider when building and evaluating our classifiers.
 
 # %%
@@ -84,9 +56,9 @@ rawDf = ss.read.csv("crash_data.csv", header=True, inferSchema=True)
 
 # %% [markdown]
 # ## Data preprocessing
-# 
+#
 # There are a number of steps we need to take to prepare our data for KMeans Clustering and PCA and for use by the various classifiers.
-# 
+#
 # First, we will add a crash duration column derived from the start_time and end_time columns to give our various models a data type they can work with (double) rather than a time. This also allows us to drop the start_time and end_time columns.
 
 # %%
@@ -115,8 +87,8 @@ cleanedDf = cleanedDf.drop("ID", "Airport_Code", "Zipcode", "Source", "Start_Tim
                          "Weather_Timestamp", "Wind_Direction", "Civil_Twilight", "Nautical_Twilight", "Astronomical_Twilight", "Turning_Loop", "State", "Street", "Sunrise_Sunset")
 
 # %% [markdown]
-# For string columns that we may want to keep, we can try using a method to convert the values into vectors that still retain some of the semantic information of the values (by magic). 
-# 
+# For string columns that we may want to keep, we can try using a method to convert the values into vectors that still retain some of the semantic information of the values (by magic).
+#
 # The model we tried using for this conversion is called Word2Vec, but, though it succeeded, it increased the dimensionality of our data drastically. We think the increased dimensionality is too large a price to pay for **potentially** retaining some data about the weather during an accident and the description of the accident, which may not even be useful in our classification models.
 
 # %%
@@ -148,9 +120,7 @@ else:
 
 # %%
 cleanedDf = cleanedDf.fillna({"Wind_Chill(F)": 0, "Precipitation(in)": 0, "Wind_Speed(mph)": 0})
-
 cleanedDf.persist()
-
 print("||DATA PREPROCESSED||")
 
 # %% [markdown]
@@ -162,9 +132,9 @@ print("||DATA PREPROCESSED||")
 
 # %% [markdown]
 # ## Vectorize our feature columns for use in K-Means clustering and PCA
-# 
+#
 # The rest of the processing we do on our data prefers our table be condensed into a single vectorized column, so we do that here.
-# 
+#
 # For K-Means and PCA we will retain severity in the features column, later for the classifier we will drop that information from the features column.
 
 # %%
@@ -173,11 +143,11 @@ print("||DATA PREPROCESSED||")
 kmeansAssembler = VectorAssembler(inputCols=cleanedDf.columns, outputCol="features", handleInvalid="skip")
 kmeansData = kmeansAssembler.transform(cleanedDf)
 
-lostRecordCount = cleanedDf.count() - kmeansData.count()
+#lostRecordCount = cleanedDf.count() - kmeansData.count()
 
 # %%
-print("Lost records due to null values: ", lostRecordCount) 
-print("Percentage of total records lost: ", lostRecordCount/cleanedDf.count())
+#print("Lost records due to null values: ", lostRecordCount)
+#print("Percentage of total records lost: ", lostRecordCount/cleanedDf.count())
 
 print("||BEGNNING KMEANS")
 
@@ -186,23 +156,23 @@ print("||BEGNNING KMEANS")
 
 # %% [markdown]
 # ## K-Means Clustering
-# 
+#
 # This data has a large number of features, so we will perform K-Means Clustering to see if we can find some patterns in our data and PCA to better understand which features of our dataset affect crash severity.
 
 # %%
 def fit_kmeans(df_input,num_cluster_centers=3):
   kmeans = KMeans().setK(num_cluster_centers).setSeed(1)
-  
+
   model = kmeans.fit(df_input)
-  
+
   clustered_data = model.transform(df_input)
 
   wcss = model.summary.trainingCost
-  
+
   return clustered_data, wcss
 
 # %%
-kValues = range(2, 20)
+kValues = range(10, 20)
 wcss_scores = []
 
 for k in kValues:
@@ -225,7 +195,7 @@ plt.savefig("prePCAElbowMethodICDS.png")
 
 # %% [markdown]
 # ## PCA
-# 
+#
 # This data has a large number of features, so we will perform PCA to see what the true dimensionality of our data is, and see if we can produce better K-Means results after reducing our data
 
 # %%
@@ -244,7 +214,7 @@ scaledData = scalerModel.transform(kmeansData)
 # We will find the minimum number of principle components needed to explain at least 95% of the variance. We want to reduce the dimensionality of our data as much as possible but still retain a high amount of the variance.
 
 # %%
-principleComponents = range(1, 26)
+principleComponents = range(17, 26)
 bestPcCount = 1
 for pc in principleComponents:
     print(f"||DOING PCA WITH {pc} PRINCIPLE COMPONENTS||")
@@ -264,13 +234,13 @@ print("Explained Variance: ", sum(bestPcaModel.explainedVariance))
 # %%
 def fit_kmeans_column(df_input,column_name='pcaFeatures',num_cluster_centers=3):
   kmeans = KMeans(featuresCol=column_name).setK(num_cluster_centers).setSeed(1)
-  
+
   model = kmeans.fit(df_input)
-  
+
   clustered_data = model.transform(df_input)
 
   wcss = model.summary.trainingCost
-  
+
   return clustered_data, wcss
 
 # %%
@@ -296,9 +266,9 @@ plt.savefig("postPCAElbowMethodICDS.png")
 
 # %% [markdown]
 # ## Vectorize our feature columns for use by classifiers
-# 
+#
 # For the classifier we will drop severity from the features column, as that will be the label column that the classifier will be trying to predict.
-# 
+#
 # We also split our data into a training set and test set, using 75% of the data in training and reserving 25% for testing. As we will be using these two sets for each of the classifiers, we cache them using the persist() command.
 
 # %%
@@ -327,9 +297,6 @@ f1Evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol=
 def trainAndEvaluateDT(trainingData: pyspark.sql.DataFrame, testData: pyspark.sql.DataFrame) -> (pd.DataFrame, int, pyspark.ml.classification.DecisionTreeClassificationModel):
     dtHyperparamsEvaluationDf = pd.DataFrame(columns = ["max depth", "min instances per node", "testing f1", "testing accuracy", "best model"])
 
-    trainingData.persist()
-    testData.persist()
-
     index = 0
     bestIndex = 0
     highestTestF1 = 0
@@ -345,10 +312,8 @@ def trainAndEvaluateDT(trainingData: pyspark.sql.DataFrame, testData: pyspark.sq
             dtClassifier = DecisionTreeClassifier(featuresCol="features", labelCol="label", maxDepth=maxDepth, minInstancesPerNode=minInstances, seed=seed)
             dtModel = dtClassifier.fit(trainingData)
             testPredictions = dtModel.transform(testData)
-            testPredictions.persist()
             testingF1 = f1Evaluator.evaluate(testPredictions)
             testingAccuracy = accuracyEvaluator.evaluate(testPredictions)
-            testPredictions.unpersist()
 
             dtHyperparamsEvaluationDf.loc[index] = [maxDepth, minInstances, testingF1, testingAccuracy, 0]
 
@@ -360,15 +325,12 @@ def trainAndEvaluateDT(trainingData: pyspark.sql.DataFrame, testData: pyspark.sq
             index += 1
 
     dtHyperparamsEvaluationDf.loc[bestIndex, "best model"] = 1
-    dtHyperparamsEvaluationDf.to_csv("dtHyperparametersICDS.csv", index=True, sep="|")
-
-    trainingData.unpersist()
-    testData.unpersist()
 
     return (dtHyperparamsEvaluationDf, bestIndex, bestDtModel)
 
 # %%
 dtDf, dtIndex, bestDtModel = trainAndEvaluateDT(trainingData=trainingData, testData=testData)
+dtDf.to_csv("dtHyperparametersICDS.csv", index=True, sep="|")
 dtF1 = dtDf.loc[dtIndex, "testing f1"]
 dtAccuracy = dtDf.loc[dtIndex, "testing accuracy"]
 
@@ -396,15 +358,12 @@ visualizeDT(dtModel=bestDtModel, modelPath="bestDecisionTreeModelICDS", outputPa
 
 # %% [markdown]
 # ## Classification with Random Forest
-# 
+#
 # We will now see how a random forest classifier performs on the data.
 
 # %%
 def trainAndEvaluateRandomForest(trainingData: pyspark.sql.DataFrame, testData: pyspark.sql.DataFrame) -> (pd.DataFrame, int):
     randomForestEvaluationDf = pd.DataFrame(columns = ["max depth", "min instances per node", "testing f1", "testing accuracy", "best model"])
-
-    trainingData.persist()
-    testData.persist()
 
     index = 0
     bestIndex = 0
@@ -420,10 +379,8 @@ def trainAndEvaluateRandomForest(trainingData: pyspark.sql.DataFrame, testData: 
             randomForestClassifier = RandomForestClassifier(featuresCol="features", labelCol="label", maxDepth=maxDepth, minInstancesPerNode=minInstances, seed=seed)
             randomForestModel = randomForestClassifier.fit(trainingData)
             testPredictions = randomForestModel.transform(testData)
-            testPredictions.persist()
             testingF1 = f1Evaluator.evaluate(testPredictions)
             testingAccuracy = accuracyEvaluator.evaluate(testPredictions)
-            testPredictions.unpersist()
 
             randomForestEvaluationDf.loc[index] = [maxDepth, minInstances, testingF1, testingAccuracy, 0]
 
@@ -435,9 +392,6 @@ def trainAndEvaluateRandomForest(trainingData: pyspark.sql.DataFrame, testData: 
 
     randomForestEvaluationDf.loc[bestIndex, "best model"] = 1
     randomForestEvaluationDf.to_csv("randomForestHyperparametersICDS.csv", index=True, sep="|")
-
-    trainingData.unpersist()
-    testData.unpersist()
 
     return (randomForestEvaluationDf, bestIndex)
 
@@ -458,8 +412,8 @@ print(randomForestDf.loc[randomForestIndex])
 
 # %% [markdown]
 # ## Classification with a neural network (multilayer perceptron)
-# 
-# Neural Networks are generally outperformed by tree-based methods such as decision trees and random forest in classifying tabular data, so we would expect that this method of classification would perform worst on our dataset. 
+#
+# Neural Networks are generally outperformed by tree-based methods such as decision trees and random forest in classifying tabular data, so we would expect that this method of classification would perform worst on our dataset.
 
 # %% [markdown]
 # First we create an MLP Classifier with arbitrary hidden layer sizes. The input layer must have 25 nodes to ingest all 25 features of our dataset and the output layer must have 4 nodes for each of the 4 severity classes. The hyperparameter we will be tuning here is the hidden layer sizes i.e. the layers of nodes between the input and output layers.
@@ -467,9 +421,6 @@ print(randomForestDf.loc[randomForestIndex])
 # %%
 def trainAndEvaluateMLP(trainingData: pyspark.sql.DataFrame, testData: pyspark.sql.DataFrame) -> (pd.DataFrame, int):
     mlpHyperparamsEvaluationDf = pd.DataFrame(columns = ["hidden layer sizes", "testing f1", "testing accuracy", "best model"])
-
-    trainingData.persist()
-    testData.persist()
 
     index = 0
     bestIndex = 0
@@ -483,10 +434,8 @@ def trainAndEvaluateMLP(trainingData: pyspark.sql.DataFrame, testData: pyspark.s
         mlpClassifier = MultilayerPerceptronClassifier(featuresCol="features", labelCol="label", layers=[25] + layerSize + [4], seed=seed)
         mlpModel = mlpClassifier.fit(trainingData)
         testPredictions = mlpModel.transform(testData)
-        testPredictions.persist()
         testingF1 = f1Evaluator.evaluate(testPredictions)
         testingAccuracy = accuracyEvaluator.evaluate(testPredictions)
-        testPredictions.unpersist()
 
         mlpHyperparamsEvaluationDf.loc[index] = [layerSize, testingF1, testingAccuracy, 0]
 
@@ -498,9 +447,6 @@ def trainAndEvaluateMLP(trainingData: pyspark.sql.DataFrame, testData: pyspark.s
 
     mlpHyperparamsEvaluationDf.loc[bestIndex, "best model"] = 1
     mlpHyperparamsEvaluationDf.to_csv("mlpHyperparametersICDS.csv", index=True, sep="|")
-
-    trainingData.unpersist()
-    testData.unpersist()
 
     return (mlpHyperparamsEvaluationDf, bestIndex)
 
@@ -517,9 +463,9 @@ print(mlpDf.loc[mlpIndex])
 
 # %% [markdown]
 # ## Results of classification
-# 
+#
 # After training and tuning three classification models (decision tree, random forest, and multilayer perceptron) we can conclude that, of the models examined, the **Decision tree model is the most powerful predictor of car crash severity**, given this specific dataset. Neither the decision tree nor the multilayer perceptron classifier was able to achieve an F1 score >90% on the test data.
-# 
+#
 # What is important to note is that none of the models performed exceptionally well, especially considering the heavy imbalance in the data, by randomly guessing severity 2 or 3 a model would do alright. Perhaps this implies that there is no strong correlation between crash severity and any of the features in the dataset.
 
 # %% [markdown]
@@ -554,7 +500,7 @@ def plotClassifierPerformance(classifierLabels: list[str], accuracyScores: list[
 
 # %%
 classifiers = ['Decision Tree', 'Random Forest', 'Multilayer Perceptron']
-accuracyScores = [dtAccuracy, randomForestAccuracy, mlpAccuracy] 
+accuracyScores = [dtAccuracy, randomForestAccuracy, mlpAccuracy]
 f1Scores = [dtF1, randomForestF1, mlpF1]
 
 plotClassifierPerformance(classifierLabels=classifiers, accuracyScores=accuracyScores, f1Scores=f1Scores, title="Classifier Performance", xTitle="Classifier", outputPath="classifiersBarChartICDS.png")
@@ -565,11 +511,11 @@ plotClassifierPerformance(classifierLabels=classifiers, accuracyScores=accuracyS
 
 # %% [markdown]
 # ## Exploring the minimum number of columns needed for similar results
-# 
+#
 # Even though we dropped many of the columns from this dataset at the onset for being non-categorical strings, it seems likely that many of the remaining columns also should not be needed to predict crash severity. So we will drop as many of the columns as we can to produce similar results with the decision tree model. Afterwards, we will use the reduced feature set to visualize a decision tree, as the above decision tree visualization is too complex to really parse and understand.
-# 
+#
 # This should be an interesting exploration into the true nature of the severity classification used in this dataset, hopefully illuminating some of the characteristics used to rank the severity of an accident.
-# 
+#
 # It will also be interesting to see whether the best set of hyperparameters remains the same as the set found earlier or changes with each new set of features.
 
 # %% [markdown]
@@ -643,7 +589,7 @@ locEnvironmentDf, locEnvironmentIndex, locEnvironmentModel = vectorizeAndTestDT(
 print("||BEGIN TRAINING LOC+ACCIDENT||")
 locAccidentDf, locAccidentIndex, locAccidentModel = vectorizeAndTestDT(vectorAssembler=assemblerLocAccident)
 print("||BEGIN TRAINING LOC||")
-locDf, locIndex, locModel = vectorizeAndTestDT(vectorAssembler=assemblerLoc) 
+locDf, locIndex, locModel = vectorizeAndTestDT(vectorAssembler=assemblerLoc)
 
 # %%
 locationNames = ["Loc+Source", "Loc+Road", "Loc+Env", "Loc+Accident", "Only Loc"]
@@ -657,7 +603,7 @@ plotClassifierPerformance(classifierLabels=locationNames, accuracyScores=locatio
 
 # %% [markdown]
 # ## Visualizing a decision tree that classifies strictly based on latitude and longitude.
-# 
+#
 # The visualization produced by the decision tree classifier generated after hyperparameter tuning was too dense to parse, so hopefully by reducing the feature set to the bare minimum (only latitude and longitude information), we can better understand how the decision tree is doing classification.
 
 # %%
@@ -668,5 +614,3 @@ visualizeDT(dtModel=locModel, modelPath="locDecisionTreeModel", outputPath="locD
 
 # %%
 ss.stop()
-
-
